@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi TKA Bahasa Indonesia Kelas 12 - Ibu Guru Nining</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #3498db; --success: #2ecc71; --warning: #f1c40f; --danger: #e74c3c; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 0; color: #333; }
+        header { background: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 1.2rem; }
+        .timer-box { background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 1rem; }
+        .container { max-width: 850px; margin: 20px auto; padding: 0 15px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .developer-badge { background: #e8f8f5; color: #16a085; padding: 8px 15px; border-radius: 20px; font-weight: bold; display: inline-block; margin-bottom: 15px; font-size: 0.9rem; }
+        .stimulus { background: #f8f9fa; border-left: 4px solid var(--accent); padding: 18px; border-radius: 6px; margin-bottom: 20px; line-height: 1.7; font-size: 0.95rem; text-align: justify; max-height: 350px; overflow-y: auto; border: 1px solid #e2e8f0; }
+        .options label { display: block; margin: 10px 0; padding: 12px 15px; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.2s; line-height: 1.5; }
+        .options label:hover { background: #ebf5fb; border-color: var(--accent); }
+        .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 8px; margin-top: 15px; }
+        .nav-btn { padding: 10px; background: #eee; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .nav-btn.answered { background: var(--success); color: white; }
+        .nav-btn.current { border: 2px solid var(--primary); }
+        .btn { background: var(--accent); color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; width: 100%; margin-top: 15px; }
+        .btn:hover { opacity: 0.9; }
+        .result-score { font-size: 3.5rem; font-weight: bold; color: var(--success); text-align: center; margin: 15px 0; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>Simulasi TKA Bahasa Indonesia</h1>
+        <small style="opacity: 0.85;">Penyusun Asesmen: Ibu Guru Nining</small>
+    </div>
+    <div class="timer-box" id="timer">50:00</div>
+</header>
+
+<div class="container">
+    <!-- Form Identitas -->
+    <div class="card" id="identityCard">
+        <h2>Data Peserta Ujian</h2>
+        <div class="developer-badge">Dikembangkan & Disusun oleh: Ibu Guru Nining</div>
+        <div style="margin-bottom: 15px;">
+            <label><strong>Nama Lengkap:</strong></label>
+            <input type="text" id="studentName" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;" placeholder="Masukkan Nama Siswa...">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label><strong>Kelas / Nomor Absen:</strong></label>
+            <input type="text" id="studentClass" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;" placeholder="Contoh: XII-1 / 15">
+        </div>
+        <button class="btn" onclick="startQuiz()">Mulai Ujian TKA</button>
+    </div>
+
+    <!-- Area Kuis -->
+    <div class="card" id="quizCard" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <strong id="questionNumber">Soal Nomor 1 / 25</strong>
+            <span id="cognitiveTag" style="background: #e8f4f8; color: #2980b9; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 0.85rem;">Knowing</span>
+        </div>
+        <div class="stimulus" id="stimulusText">Memuat stimulus...</div>
+        <div id="questionText" style="font-weight: bold; margin-bottom: 15px; font-size: 1.05rem;">Memuat pertanyaan...</div>
+        <div class="options" id="optionsContainer">Memuat pilihan...</div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn" style="background: #7f8c8d;" onclick="prevQuestion()">Sebelumnya</button>
+            <button class="btn" onclick="nextQuestion()">Selanjutnya</button>
+        </div>
+
+        <hr style="margin: 25px 0; border: none; border-top: 1px solid #eee;">
+        <label><strong>Navigasi Soal:</strong></label>
+        <div class="nav-grid" id="navGrid"></div>
+        <button class="btn" style="background: var(--success); margin-top: 25px; font-size: 1.1rem;" onclick="finishQuiz()">Selesai & Kumpulkan</button>
+    </div>
+
+    <!-- Area Hasil -->
+    <div class="card" id="resultCard" style="display: none;">
+        <h2 style="text-align: center; margin-bottom: 5px;">Laporan Hasil Ujian TKA</h2>
+        <div class="developer-badge" style="display: block; text-align: center; margin-bottom: 20px;">Disusun oleh: Ibu Guru Nining</div>
+        <hr style="border: none; border-top: 1px solid #eee; margin-bottom: 20px;">
+        <p><strong>Nama Siswa:</strong> <span id="resName">-</span></p>
+        <p><strong>Kelas / Absen:</strong> <span id="resClass">-</span></p>
+        <div class="result-score" id="resScore">0</div>
+        <p style="text-align: center; font-weight: bold; font-size: 1.1rem;" id="resSummary">Benar: 0 / 25 Soal</p>
+        <button class="btn" onclick="window.print()">Simpan PDF / Cetak Hasil</button>
+    </div>
+</div>
+
+<script>
+const questions = [
+    {
+        id: 1, cognitive: "Reasoning",
+        stimulus: "<strong>Teks Bencana Lingkungan & Ekosistem Pesisir:</strong><br>Ekosistem mangrove di wilayah pesisir Indonesia mengalami degradasi yang sangat mengkhawatirkan selama tiga dekade terakhir. Berdasarkan data Kementerian Lingkungan Hidup, lebih dari 40% hutan mangrove di pesisir utara Jawa telah beralih fungsi menjadi kawasan pertambakan intensif, permukiman, dan kawasan industri. Padahal, mangrove memiliki fungsi ekologis yang tak tergantikan. Sistem perakarannya yang rapat mampu meredam energi gelombang laut hingga 66%, mencegah abrasi tanah aluvial, dan menjadi penyaring alami limbah bermuatan logam berat sebelum mencapai laut lepas.<br><br>Selain fungsi fisik, hutan mangrove merupakan habitat pembesaran (*nursery ground*) bagi hampir 70% spesies ikan ekonomis penting dan krustasea. Hilangnya tutupan mangrove memicu penurunan drastis tangkapan nelayan tradisional di wilayah pesisir. Penurunan kualitas lingkungan ini berantai pada kerentanan pesisir terhadap ancaman kenaikan permukaan air laut akibat perubahan iklim global. Tanpa restorasi ekosistem mangrove yang komprehensif, pemukiman pesisir diprediksi akan mengalami banjir rob permanen dalam kurun waktu 15 hingga 20 tahun mendatang.",
+        question: "Berdasarkan analisis teks di atas, konsekuensi rantai dampak paling berbahaya bagi masyarakat pesisir jika alih fungsi hutan mangrove terus dibiarkan tanpa kendali adalah...",
+        options: [
+            "A. Hilangnya mata pencaharian nelayan tradisional akibat punahnya habitat pembesaran ikan serta ancaman banjir rob permanen di pemukiman.",
+            "B. Menurunnya kualitas produksi tambak bandeng dan udang intensif di kawasan pesisir utara Jawa.",
+            "C. Berkurangnya pasokan kayu bakau untuk kebutuhan bahan baku industri kertas lokal.",
+            "D. Kenaikan harga jual tanah aluvial di sekitar kawasan industri dan permukiman pesisir."
+        ],
+        answer: "A"
+    },
+    {
+        id: 2, cognitive: "Applying",
+        stimulus: "<strong>Teks Prosedur Operasional Transaksi Digital:</strong><br>Penggunaan dompet digital (*e-wallet*) telah menjadi bagian tak terpisahkan dari transaksi ekonomi masyarakat modern. Namun, tingginya frekuensi transaksi daring ini dibayangi oleh risiko kejahatan siber seperti *phishing* dan peretasan akun. Untuk menjaga keamanan akun pengguna, otoritas jasa keuangan menyusun panduan mitigasi risiko berikut:<br><br>1. Aktifkan fitur verifikasi dua langkah (*Two-Factor Authentication/2FA*) yang terhubung dengan nomor telepon seluler atau aplikasi pengautentikasi resmi.<br>2. Perbarui kata sandi (*password*) secara berkala minimal 3 bulan sekali dengan kombinasi huruf kapital, huruf kecil, angka, dan simbol unik.<br>3. Hindari melakukan transaksi keuangan saat terhubung dengan jaringan Wi-Fi publik yang tidak terenkripsi.<br>4. Jangan pernah memberikan kode *One-Time Password* (OTP) kepada siapa pun, termasuk pihak yang mengaku sebagai petugas layanan pelanggan resmi.<br>5. Lakukan pemeriksaan riwayat transaksi secara berkala untuk mendeteksi adanya aktivitas mencurigakan secara dini.",
+        question: "Seorang pengguna e-wallet menerima pesan mendadak dari seseorang yang mengaku staf resmi bank dan meminta kode OTP dengan alasan pembaharuan sistem keamanan. Berdasarkan panduan di atas, tindakan mitigasi yang paling tepat dilakukan pengguna adalah...",
+        options: [
+            "A. Segera mengirimkan kode OTP agar akun tidak diblokir oleh pihak bank.",
+            "B. Mengabaikan dan menolak memberikan kode OTP serta memblokir nomor pengirim pesan tersebut.",
+            "C. Mengubah kata sandi akun terlebih dahulu sebelum memberikan kode OTP kepada staf.",
+            "D. Mematikan sambungan jaringan Wi-Fi publik dan beralih ke paket data seluler."
+        ],
+        answer: "B"
+    },
+    {
+        id: 3, cognitive: "Reasoning",
+        stimulus: "<strong>Teks Editorial - Kedaulatan Pangan Masa Depan:</strong><br>Ketergantungan Indonesia pada impor komoditas pangan utama seperti gandum dan kedelai merupakan kerentanan strategis yang harus segera dibenahi. Di tengah ketidakpastian geopolitik global dan gangguan rantai pasok dunia, menumpukan ketahanan pangan nasional pada pasar internasional adalah langkah riskan. Negeri ini dikaruniai keanekaragaman hayati pangan lokal yang luar biasa—mulai dari singkong, sagu, jagung, hingga sorgum—namun potensi ini justru terpinggirkan oleh hegemonisasi beras dan terigu.<br><br>Diversifikasi pangan bukan sekadar wacana diversifikasi menu di meja makan, melainkan strategi kebudayaan dan ekonomi politik pangan. Pemerintah tidak cukup hanya mengimbau masyarakat untuk 'makan singkong', tetapi harus membangun ekosistem hilirisasi pangan lokal yang kompetitif. Insentif bagi petani lokal, subsidi teknologi pengolahan pascapanen, hingga integrasi produk pangan lokal ke dalam program bansos serta konsumsi lembaga pemerintah adalah kunci keberhasilan. Tanpa political will yang kuat untuk menghentikan ketergantungan impor, kedaulatan pangan Indonesia hanya akan menjadi slogan kosong di tengah krisis global yang kian nyata.",
+        question: "Opini kritis utama yang ingin disampaikan oleh redaksi melalui teks editorial tersebut adalah...",
+        options: [
+            "A. Masyarakat Indonesia harus dipaksa untuk tidak lagi mengonsumsi beras dan gandum demi menghemat devisa negara.",
+            "B. Pemerintah perlu mewujudkan kedaulatan pangan nasional secara nyata melalui regulasi hilirisasi dan insentif bagi pangan lokal.",
+            "C. Impor komoditas pangan seperti gandum dan kedelai harus dihentikan secara total mulai tahun ini.",
+            "D. Diversifikasi pangan lokal telah berhasil dilaksanakan dengan baik di seluruh wilayah Indonesia."
+        ],
+        answer: "B"
+    },
+    {
+        id: 4, cognitive: "Knowing",
+        stimulus: "<strong>Kutipan Sastra Komparatif (Novel Modern):</strong><br>Di bawah naungan pohon kenari tua di sudut alun-alun kota kecil itu, Pak Broto duduk menyendiri. Matanya yang rabun menatap lalu lalang kendaraan bermotor yang merayap bising, menggantikan bayangan dokar-dokar kayu yang dulu berjejer rapi menunggu penumpang. Dalam kerataan zaman yang serba cepat ini, ia merasa dirinya seperti puing bangunan tua yang terlupakan di tengah deretan gedung pencakar langit berarsitektur kaca. Zaman telah melompat jauh ke depan, meninggalkan dirinya yang melekat erat pada ingatan masa lalu yang makin pudar.",
+        question: "Majas personifikasi dan latar suasana yang paling menonjol dalam kutipan novel di atas secara berturut-turut adalah...",
+        options: [
+            "A. 'Kendaraan bermotor merayap bising' dan suasana terasing yang penuh nostalgia.",
+            "B. 'Pohon kenari tua di sudut alun-alun' dan suasana gembira menyambut modernisasi.",
+            "C. 'Gedung pencakar langit berarsitektur kaca' dan suasana mencekam penuh amarah.",
+            "D. 'Bayangan dokar-dokar kayu berjejer' dan suasana tegang di tengah kota."
+        ],
+        answer: "A"
+    },
+    {
+        id: 5, cognitive: "Applying",
+        stimulus: "<strong>Teks Kebahasaan & Kerapian Kalimat:</strong><br>(1) Peneliti dari Kementerian Pertanian menemukan fenomena bahwa serangan hama wereng cokelat di wilayah pesisir semakin meluas.<br>(2) Hal mana disebabkan karena perubahan cuaca yang ekstrem dan penggunaan pestisida kimia berlebihan.<br>(3) Akibatnya, para petani-petani mengalami penurunan hasil panen hingga mencapai 40%.<br>(4) Oleh karena itu, penerapan sistem pengendalian hama terpadu berbasis hayati sangat direkomendasikan.",
+        question: "Kalimat nomor (2) dan (3) dalam paragraf di atas tidak efektif. Perbaikan yang tepat agar paragraf menjadi padu dan efektif adalah...",
+        options: [
+            "A. (2) Fenomena ini disebabkan oleh perubahan cuaca ekstrem dan penggunaan pestisida kimia berlebihan; (3) Akibatnya, petani mengalami penurunan hasil panen hingga 40%.",
+            "B. (2) Yang mana disebabkan cuaca ekstrem dan pestisida; (3) Akibatnya para petani-petani rugi besar.",
+            "C. (2) Hal itu disebabkan cuaca ekstrem; (3) Sehingga akibatnya petani-petani turun panennya.",
+            "D. (2) Disebabkan karena cuaca ekstrem; (3) Para petani mengalami penurunan panen 40%."
+        ],
+        answer: "A"
+    },
+    {
+        id: 6, cognitive: "Reasoning",
+        stimulus: "<strong>Teks Diskusi - Penggunaan Artificial Intelligence (AI) di Dunia Pendidikan:</strong><br>Pemanfaatan kecerdasan buatan (*Artificial Intelligence/AI*) seperti ChatGPT di lingkungan akademik memicu perdebatan sengit di kalangan pendidik. Di satu sisi, kubu pro berargumen bahwa AI adalah alat bantu pembelajaran interaktif yang dapat mempersonalisasi materi sesuai kecepatan belajar siswa, membantu riset literatur, dan meningkatkan efisiensi tugas-tugas administratif guru. AI dinilai sebagai realitas teknologi yang tidak bisa dihindari, sehingga siswa justru harus dilatih menggunakan AI secara etis dan kritis.<br><br>Di sisi lain, kubu kontra menyoroti ancaman kemunduran kemampuan berpikir kritis (*critical thinking*) dan daya naluriah analisis siswa. Ketergantungan berlebih pada AI dikhawatirkan memicu erosi integritas akademik berupa plagiarisme terselubung dan degradasi kemampuan menulis mandiri. Selain itu, kebenaran informasi yang dihasilkan AI tidak selalu dapat dipertanggungjawabkan karena potensi 'halusinasi data'.",
+        question: "Sintesis atau jalan tengah yang paling bijaksana untuk menjembatani perbedaan pandangan dalam teks diskusi tersebut adalah...",
+        options: [
+            "A. Melarang total penggunaan semua jenis aplikasi berbasis AI di sekolah dan perguruan tinggi.",
+            "B. Membiarkan siswa menggunakan AI secara bebas tanpa perlu adanya pengawasan atau aturan khusus.",
+            "C. Mengintegrasikan AI sebagai alat bantu belajar dengan menyusun regulasi etika penggunaan dan asesmen berbasis analisis kritis mandiri.",
+            "D. Mengganti seluruh peran guru dan dosen dengan sistem pembelajaran kecerdasan buatan yang terintegrasi."
+        ],
+        answer: "C"
+    },
+    {
+        id: 7, cognitive: "Knowing",
+        stimulus: "<strong>Teks Biografi Tokoh - Ki Hajar Dewantara:</strong><br>Raden Mas Soewardi Soerjaningrat, yang kelak dikenal sebagai Ki Hajar Dewantara, lahir dalam keluarga bangsawan Yogyakarta. Meski berlatar belakang aristokrat, ia memilih menanggalkan gelar kebangsawanannya agar dapat dekat dengan rakyat jelata tanpa sekat sosial. Melalui tulisan-tulisannya yang tajam di surat kabar seperti *De Express*, ia gencar mengkritik kebijakan pendidikan pemerintah kolonial Belanda yang diskriminatif dan hanya diperuntukkan bagi kaum elit. Puncaknya, risalah kritik pedasnya yang berjudul *Als ik eens Nederlander was* ('Seandainya Aku Seorang Belanda') membuatnya dibuang ke Belanda pada tahun 1913. Sekembalinya dari pengasingan, ia mendirikan Perguruan Taman Siswa pada tahun 1922 yang menjadi pilar perjuangan pendidikan nasional.",
+        question: "Hal yang dapat diteladani dari kepribadian Ki Hajar Dewantara berdasarkan kutipan biografi di atas adalah...",
+        options: [
+            "A. Keberanian melepas hak istimewa bangsawan serta konsistensi memperjuangkan kesetaraan pendidikan rakyat melalui pena dan aksi.",
+            "B. Keinginan untuk mengadopsi seluruh sistem pendidikan barat di Indonesia tanpa disaring.",
+            "C. Keputusannya untuk menetap di Belanda demi menghindari tekanan politik kolonial.",
+            "D. Kemampuannya mendirikan sekolah berbayar mahal khusus untuk keturunan bangsawan."
+        ],
+        answer: "A"
+    },
+    {
+        id: 8, cognitive: "Applying",
+        stimulus: "<strong>Teks Artikel Ilmiah Populer:</strong><br>Mikroplastik kini telah terdeteksi dalam sampel air hujan di area pegunungan terpencil hingga organ tubuh manusia. partikel berbahaya ini terbentuk dari pelapukan limbah plastik berukuran besar yang terurai akibat paparan sinar ultraviolet dan gesekan mekanis di lingkungan. Karena ukurannya yang amat kecil (kurang dari 5 milimeter), mikroplastik dengan mudah terhirup melalui udara atau tertelan melalui rantai makanan.",
+        question: "Penggunaan huruf kapital yang salah pada paragraf di atas terdapat pada kata...",
+        options: [
+            "A. 'partikel' di awal kalimat kedua yang seharusnya diawali huruf kapital ('Partikel').",
+            "B. ' ultraviolet' yang seharusnya ditulis dengan huruf kapital seluruhnya.",
+            "C. 'milimeter' yang seharusnya diawali dengan huruf kapital.",
+            "D. 'pegunungan' yang seharusnya menggunakan huruf besar 'Pegunungan'."
+        ],
+        answer: "A"
+    },
+    {
+        id: 9, cognitive: "Reasoning",
+        stimulus: "<strong>Teks Resensi Buku Sastra:</strong><br>Novel *Laut Bercerita* karya Leila S. Chudori secara memikat menganyam narasi tragedi penghilangan paksa para aktivis mahasiswa pada masa Orde Baru. Melalui sudut pandang tokoh Biru Laut dan adiknya, Asmara Jati, pembaca diajak menyelami ketakutan, harapan, dan duka mendalam keluarga korban yang ditinggalkan tanpa kepastian. Kekuatan novel ini terletak pada riset sejarah yang mendalam dan kekuatan emosional karakter-karakternya. Namun, bagi pembaca awam yang tidak akrab dengan alur kilas balik (*flashback*) yang melompat-lompat, pergantian alur waktu dalam bab-bab awal mungkin akan terasa cukup membingungkan.",
+        question: "Pernyataan yang menggambarkan keunggulan sekaligus kelemahan buku berdasarkan kutipan resensi di atas adalah...",
+        options: [
+            "A. Keunggulan: riset sejarah mendalam dan emosional; Kelemahan: alur kilas balik awal yang agak membingungkan pembaca awam.",
+            "B. Keunggulan: harga buku yang sangat murah; Kelemahan: penulisan ejaan yang banyak salah.",
+            "C. Keunggulan: menggunakan bahasa asing yang keren; Kelemahan: tidak memiliki jalan cerita yang jelas.",
+            "D. Keunggulan: cover buku yang berwarna-warni; Kelemahan: jumlah halaman yang terlalu tebal."
+        ],
+        answer: "A"
+    },
+    {
+        id: 10, cognitive: "Knowing",
+        stimulus: "<strong>Teks Eksposisi Industri Kreatif:</strong><br>Perkembangan ekonomi kreatif di Indonesia menunjukkan tren positif, terutama pada subsektor aplikasi, gim, dan kriya. Dukungan infrastruktur digital yang makin merata membuka peluang bagi kreator daerah untuk menembus pasar global tanpa harus berpindah ke kota besar. Pemerintah menargetkan kontribusi ekonomi kreatif terhadap Produk Domestik Bruto (PDB) dapat mencapai angka 8% pada tahun depan.",
+        question: "Gagasan utama paragraf tersebut adalah...",
+        options: [
+            "A. Tren positif perkembangan ekonomi kreatif di Indonesia serta peluang kreator daerah.",
+            "B. Hambatan utama kreator daerah dalam menembus pasar global.",
+            "C. Penurunan kontribusi sektor gim terhadap PDB nasional.",
+            "D. Kewajiban kreator daerah untuk berpindah ke kota-kota besar."
+        ],
+        answer: "A"
+    },
+    {
+        id: 11, cognitive: "Applying",
+        stimulus: "<strong>Teks Surat Dinas / Penawaran Kerjasama:</strong><br>Hal: Penawaran Pelatihan Digital Marketing<br>Yth. Kepala SMA Nusantara<br>di Tempat<br><br>Dengan hormat,<br>Dalam rangka meningkatkan kompetensi kewirausahaan digital siswa kelas XII, kami dari Lembaga Edukasi Bangsa bermaksud menawarkan program pelatihan intensif 'Digital Skill For Gen-Z'.<br>(...)<br>Demikian surat penawaran ini kami sampaikan. Atas perhatian Bapak/Ibu, kami ucapkan terima kasih.",
+        question: "Kalimat penutup yang paling tepat dan santun untuk melengkapi bagian rumpang dalam surat resmi di atas adalah...",
+        options: [
+            "A. Besar harapan kami agar tawaran kerja sama ini dapat disambut baik melalui diskusi lebih lanjut.",
+            "B. Buruan balasan surat ini sebelum kami berikan kesempatan ini ke sekolah lain.",
+            "C. Harap segera menghubungi kami karena kuota pendaftaran sangat terbatas.",
+            "D. Kami tunggu jawaban secepatnya hari ini juga tanpa ditunda."
+        ],
+        answer: "A"
+    },
+    {
+        id: 12, cognitive: "Reasoning",
+        stimulus: "<strong>Teks Kritik Sosial (Esai Kebudayaan):</strong><br>Masyarakat modern sering kali terjebak dalam budaya konsumerisme yang dikendalikan oleh algoritma media sosial. Keinginan untuk membeli barang bukan lagi didasari oleh fungsi atau kebutuhan objektif, melainkan oleh dorongan menciptakan citra diri (*self-image*) konseptual di ruang maya. Fenomena ini menciptakan ilusi kebahagiaan semu yang memicu kecemasan finansial dan mental di kalangan usia muda.",
+        question: "Pesan tersirat yang ingin disampaikan penulis esai kepada pembaca adalah...",
+        options: [
+            "A. Pentingnya bersikap kritis dan bijaksana dalam mengendalikan konsumsi agar tidak terjebak citra semu media sosial.",
+            "B. Keharusan menghapus seluruh akun media sosial agar tidak terpengaruh iklan barang.",
+            "C. Anjuran untuk terus membeli barang-barang bermerek demi meningkatkan status sosial.",
+            "D. Himbauan agar industri manufaktur berhenti memproduksi barang-barang konsumsi."
+        ],
+        answer: "A"
+    },
+    {
+        id: 13, cognitive: "Knowing",
+        stimulus: "<strong>Teks Laporan Penelitian Pertanian:</strong><br>Penerapan teknik irigasi tetes (*drip irrigation*) pada lahan kering terbukti mampu menghemat penggunaan air hingga 50% dibandingkan metode penggenangan konvensional. Selain efisiensi air, irigasi tetes memungkinkan pemberian pupuk cair secara presisi langsung ke zona perakaran tanaman, sehingga menekan pertumbuhan gulma pengganggu.",
+        question: "Istilah 'presisi' dalam konteks bacaan di atas bermakna...",
+        options: [
+            "A. Ketepatan dan keakuratan dalam ukuran atau sasaran.",
+            "B. Kecepatan arus air yang sangat deras.",
+            "C. Campuran bahan kimia yang pekat.",
+            "D. Luas lahan yang tidak terbatas."
+        ],
+        answer: "A"
+    },
+    {
+        id: 14, cognitive: "Applying",
+        stimulus: "<strong>Kalimat Bermakna Ganda (Ambiguitas):</strong><br>'Siswa XII SMA yang terkenal itu menerima penghargaan dari kementerian.'",
+        question: "Kalimat di atas bermakna ganda (ambigu). Perbaikan yang tepat agar kalimat tersebut tidak menimbulkan salah tafsir bahwa yang 'terkenal' adalah sekolahnya (bukan siswanya) adalah...",
+        options: [
+            "A. 'Siswa dari SMA terkenal kelas XII itu menerima penghargaan dari kementerian.'",
+            "B. 'Siswa yang terkenal dari SMA XII itu menerima penghargaan.'",
+            "C. 'Siswa SMA terkenal itu mendapat penghargaan kementerian.'",
+            "D. 'Siswa terkenal dari SMA kelas XII mendapat hadiah.'"
+        ],
+        answer: "A"
+    },
+    {
+        id: 15, cognitive: "Reasoning",
+        stimulus: "<strong>Teks Hikayat Klasik:</strong><br>Maka tiada berapa lamanya Hatta pun berlayarlah Mahsyar itu dengan kapal kerajaan. Setelah sampai ke tengah laut, maka turunlah angin ribut yang amat kencang serta dengan ombak yang besar-besar. Maka kapal itu pun terombang-ambinglah di tengah samudera. Segala anak kapal dan menteri pun sujud berdoa meminta selamat kepada Tuhan Yang Maha Kuasa. Maka dengan takdir Allah, angin pun reda dan laut kembali tenang.",
+        question: "Nilai agama (*religius*) yang sangat dominan dalam kutipan hikayat tersebut adalah...",
+        options: [
+            "A. Kepasrahan dan doa memohon pertolongan kepada Tuhan saat menghadapi bahaya marabahaya.",
+            "B. Keberanian nahkoda menembus badai tanpa rasa takut sedikit pun.",
+            "C. Kebijaksanaan menteri dalam memimpin pelayaran kerajaan.",
+            "D. Gotong royong anak kapal dalam memperbaiki kerusakan kapal."
+        ],
+        answer: "A"
+    },
+    {
+        id: 16, cognitive: "Knowing",
+        stimulus: "<strong>Teks Berita Teknologi Masa Depan:</strong><br>Kendaraan otonom (*self-driving car*) bertenaga listrik diperkirakan akan mendominasi jalan-jalan kota utama pada dekade mendatang. Dilengkapi dengan sensor lidar dan pemrosesan data berbasis AI, kendaraan ini dirancang untuk menekan angka kecelakaan lalu lintas yang disebabkan oleh kelalaian manusia (*human error*).",
+        question: "Penyebab utama kecelakaan lalu lintas yang ingin ditekan melalui penggunaan kendaraan otonom adalah...",
+        options: [
+            "A. Kelalaian manusia (*human error*).",
+            "B. Kerusakan jalan dan cuaca buruk.",
+            "C. Harga bahan bakar yang mahal.",
+            "D. Kurangnya rambu-rambu di jalan raya."
+        ],
+        answer: "A"
+    },
+    {
+        id: 17, cognitive: "Applying",
+        stimulus: "<strong>Konjungsi Kausalitas & Korelatif:</strong><br>Pemerintah tidak hanya harus membangun infrastruktur fisik di daerah terpencil (...) juga harus meningkatkan kualitas tenaga pendidik dan fasilitas kesehatan.",
+        question: "Kata penghubung (konjungsi) pasangan yang tepat untuk melengkapi kalimat di atas adalah...",
+        options: ["A. melainkan", "B. tetapi", "C. dan", "D. atau"],
+        answer: "A"
+    },
+    {
+        id: 18, cognitive: "Reasoning",
+        stimulus: "<strong>Teks Esai Kebudayaan & Bahasa Daerah:</strong><br>Bahasa daerah di Indonesia menghadapi ancaman kepunahan yang makin nyata, terutama di wilayah perkotaan. Generasi muda cenderung lebih fasih berbahasa Indonesia dan bahasa asing daripada bahasa ibu mereka. Faktor stigma bahwa bahasa daerah 'ketinggalan zaman' serta minimnya penggunaan bahasa daerah di ruang publik digital mempercepat proses pergeseran bahasa ini.",
+        question: "Langkah konkrit yang paling strategis untuk mencegah kepunahan bahasa daerah berdasarkan analisis di atas adalah...",
+        options: [
+            "A. Mengintegrasikan bahasa daerah ke dalam konten digital kreatif dan menjadikannya kebiasaan komunikasi di lingkungan keluarga.",
+            "B. Melarang penggunaan bahasa asing di seluruh sekolah dan tempat kerja.",
+            "C. Memaksa masyarakat daerah untuk tidak merantau ke kota-kota besar.",
+            "D. Mengganti bahasa nasional dengan salah satu bahasa daerah yang paling banyak penuturnya."
+        ],
+        answer: "A"
+    },
+    {
+        id: 19, cognitive: "Knowing",
+        stimulus: "<strong>Teks Prosedur Kompleks:</strong><br>Proses pengajuan hak paten atas karya inovasi memerlukan beberapa tahapan verifikasi substantif. Pertama, pendaftar harus melakukan penelusuran dokumen paten terdahulu untuk memastikan kebaruan (*novelty*) karya. Kedua, menyusun klaim spesifikasi teknis secara mendetail. Ketiga, mengunggah seluruh berkas ke portal resmi Direktorat Jenderal Kekayaan Intelektual.",
+        question: "Tujuan utama dari tahapan penelusuran dokumen paten terdahulu adalah...",
+        options: [
+            "A. Memastikan kebaruan (*novelty*) dari karya inovasi yang diajukan.",
+            "B. Membayar biaya pendaftaran paten secara tunai.",
+            "C. Memilih nama merek komersial yang menarik.",
+            "D. Menghitung jumlah keuntungan penjualan karya."
+        ],
+        answer: "A"
+    },
+    {
+        id: 20, cognitive: "Applying",
+        stimulus: "<strong>Tanda Baca & Penulisan Angka:</strong><br>Pada tahun 2025, sebanyak 1.500.000 ton sampah plastik berhasil didaur ulang oleh industri dalam negeri.",
+        question: "Penulisan tanda titik pada angka 1.500.000 dalam kalimat tersebut bertindak sebagai...",
+        options: [
+            "A. Tanda pemisah ribuan yang menyatakan jumlah.",
+            "B. Tanda penutup kalimat pernyataan.",
+            "C. Tanda pemisah jam, menit, dan detik.",
+            "D. Tanda pemisah angka desimal."
+        ],
+        answer: "A"
+    },
+    {
+        id: 21, cognitive: "Reasoning",
+        stimulus: "<strong>Teks Drama / Naskah Teater:</strong><br>Siti: '(Sambil melempar tumpukan berkas ke meja) Aku sudah lelah dengan semua janji manismu, Budi! Lima tahun kita bertahan di rumah kontrakan sempit ini, tapi tak satu pun usahamu yang berhasil!'<br>Budi: '(Menunduk lesu, suaranya parau) Sabarlah, Siti... Dunia bisnis memang keras. Aku tak pernah berhenti berjuang demi masa depan kita.'",
+        question: "Konflik utama yang terjadi antara tokoh Siti dan Budi dalam dialog drama di atas adalah...",
+        options: [
+            "A. Kejenuhan dan kekecewaan Siti atas kondisi ekonomi keluarga yang tak kunjung membaik di tengah perjuangan Budi.",
+            "B. Perebutan kepemilikan rumah kontrakan antara Siti dan Budi.",
+            "C. Pertengkaran tentang pembagian tugas rumah tangga sehari-hari.",
+            "D. Ketidaksetujuan Siti terhadap pekerjaan Budi sebagai pegawai negeri."
+        ],
+        answer: "A"
+    },
+    {
+        id: 22, cognitive: "Knowing",
+        stimulus: "<strong>Kaidah Kebahasaan Teks Argumentasi:</strong><br>'Penulis **berpendapat** bahwa edukasi finansial harus diajarkan sejak jenjang sekolah dasar agar generasi muda terhindar dari jeratan pinjaman online ilegal.'",
+        question: "Kata yang dicetak tebal dalam kalimat di atas merupakan jenis kata...",
+        options: ["A. Verba mental", "B. Verba material", "C. Nomina abstrak", "D. Adjektiva kuantitaf"],
+        answer: "A"
+    },
+    {
+        id: 23, cognitive: "Applying",
+        stimulus: "<strong>Paragraf Induktif:</strong><br>(1) Udara pagi di pegunungan terasa sangat sejuk dan bebas polusi.<br>(2) Pemandangan hijau perbukitan menenangkan mata yang lelah.<br>(3) Gemericik air sungai yang jernih menambah kedamaian jiwa.<br>(4) (...)",
+        question: "Kalimat kesimpulan yang paling tepat untuk melengkapi paragraf induktif di atas adalah...",
+        options: [
+            "A. Sungguh, kawasan pegunungan merupakan tempat yang ideal untuk melepaskan penat dari hiruk-pikuk kota.",
+            "B. Oleh karena itu, kita harus membeli tanah di kawasan pegunungan.",
+            "C. Namun, biaya perjalanan ke pegunungan sangatlah mahal.",
+            "D. Maka dari itu, kawasan pegunungan ditutup untuk umum."
+        ],
+        answer: "A"
+    },
+    {
+        id: 24, cognitive: "Reasoning",
+        stimulus: "<strong>Teks Laporan Hasil Observasi Sederhana:</strong><br>Pohon kelapa sering disebut sebagai pohon kehidupan karena hampir seluruh bagian tumbuhannya memiliki nilai guna bagi manusia. Akarnya dapat digunakan sebagai bahan obat dan pewarna alami. Batangnya yang keras dimanfaatkan sebagai bahan bangunan. Daunnya dianyam menjadi janur atau atap rumah, sementara buahnya dapat dikonsumsi langsung maupun diolah menjadi minyak kelapa.",
+        question: "Ringkasan yang paling akurat dari teks laporan observasi tersebut adalah...",
+        options: [
+            "A. Pohon kelapa dijuluki pohon kehidupan karena seluruh bagian tumbuhannya bermanfaat bagi kehidupan manusia.",
+            "B. Minyak kelapa adalah hasil olahan paling mahal dari pohon kelapa.",
+            "C. Batang pohon kelapa merupakan satu-satunya bahan bangunan terbaik di Indonesia.",
+            "D. Buah kelapa hanya bisa dikonsumsi saat cuaca panas."
+        ],
+        answer: "A"
+    },
+    {
+        id: 25, cognitive: "Knowing",
+        stimulus: "<strong>Teks Ceramah Kebudayaan:</strong><br>Hadirin yang saya hormati, kearifan lokal (*local wisdom*) bukan sekadar peninggalan masa lalu yang kuno, melainkan kumpulan pengetahuan ekologis yang teruji oleh waktu. Sebagai contoh, tradisi *Sasi* di Maluku yang melarang penangkapan biota laut tertentu pada periode waktu tertentu terbukti efektif menjaga kelestarian stok ikan di lautan.",
+        question: "Fungsi kearifan lokal 'Sasi' di Maluku berdasarkan kutipan ceramah tersebut adalah...",
+        options: [
+            "A. Menjaga kelestarian stok biota laut dan ekosistem lautan secara berkelanjutan.",
+            "B. Mengharuskan nelayan menangkap ikan setiap hari tanpa henti.",
+            "C. Menjual hasil tangkapan laut langsung ke luar negeri.",
+            "D. Menghentikan seluruh aktivitas pelayaran kapal di lautan Maluku."
+        ],
+        answer: "A"
+    }
+];
+
+let currentIdx = 0;
+let userAnswers = {};
+let timerInterval;
+let timeLeft = 3000;
+
+function startQuiz() {
+    const name = document.getElementById('studentName').value.trim();
+    const cls = document.getElementById('studentClass').value.trim();
+    if(!name || !cls) { alert('Harap isi Nama dan Kelas terlebih dahulu!'); return; }
+    
+    document.getElementById('identityCard').style.display = 'none';
+    document.getElementById('quizCard').style.display = 'block';
+    renderNav();
+    loadQuestion(0);
+    startTimer();
+}
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft / 60);
+        let s = timeLeft % 60;
+        document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+        if(timeLeft <= 0) { clearInterval(timerInterval); finishQuiz(); }
+    }, 1000);
+}
+
+function loadQuestion(idx) {
+    currentIdx = idx;
+    const q = questions[idx];
+    document.getElementById('questionNumber').innerText = `Soal Nomor ${q.id} / 25`;
+    document.getElementById('cognitiveTag').innerText = q.cognitive;
+    document.getElementById('stimulusText').innerHTML = q.stimulus;
+    document.getElementById('questionText').innerText = q.question;
+    
+    let html = '';
+    q.options.forEach(opt => {
+        const val = opt.charAt(0);
+        const checked = userAnswers[q.id] === val ? 'checked' : '';
+        html += `<label><input type="radio" name="qOpt" value="${val}" ${checked} onchange="saveAns(${q.id}, '${val}')"> ${opt}</label>`;
+    });
+    document.getElementById('optionsContainer').innerHTML = html;
+    updateNav();
+}
+
+function saveAns(qId, val) {
+    userAnswers[qId] = val;
+    updateNav();
+}
+
+function renderNav() {
+    let html = '';
+    questions.forEach((q, i) => {
+        html += `<button class="nav-btn" id="nav-${i}" onclick="loadQuestion(${i})">${i+1}</button>`;
+    });
+    document.getElementById('navGrid').innerHTML = html;
+}
+
+function updateNav() {
+    questions.forEach((q, i) => {
+        const btn = document.getElementById(`nav-${i}`);
+        btn.className = 'nav-btn';
+        if(userAnswers[q.id]) btn.classList.add('answered');
+        if(i === currentIdx) btn.classList.add('current');
+    });
+}
+
+function prevQuestion() { if(currentIdx > 0) loadQuestion(currentIdx - 1); }
+function nextQuestion() { if(currentIdx < questions.length - 1) loadQuestion(currentIdx + 1); }
+
+function finishQuiz() {
+    if(!confirm("Apakah Anda yakin ingin mengumpulkan jawaban ujian ini?")) return;
+    clearInterval(timerInterval);
+    
+    let score = 0;
+    questions.forEach(q => {
+        if(userAnswers[q.id] === q.answer) score += 4;
+    });
+
+    document.getElementById('quizCard').style.display = 'none';
+    document.getElementById('resultCard').style.display = 'block';
+    document.getElementById('resName').innerText = document.getElementById('studentName').value;
+    document.getElementById('resClass').innerText = document.getElementById('studentClass').value;
+    document.getElementById('resScore').innerText = score;
+    document.getElementById('resSummary').innerText = `Benar: ${score / 4} / 25 Soal`;
+}
+</script>
+
+</body>
+</html>
